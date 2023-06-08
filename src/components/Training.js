@@ -1,4 +1,7 @@
-import {useState} from 'react'
+import { useState } from 'react'
+import { FormTitle } from './FormTitle';
+import { search, sortDate } from './calculating';
+import TrainingList from './TrainingList';
 
 
 export default function Training() {
@@ -14,32 +17,29 @@ export default function Training() {
 	)
 	
 	const [date, setDate] = useState({date: ''});
-	const [distance, setdistance] = useState({distance: ''});
+	const [distance, setDistance] = useState({distance: ''});
 	
 	const handleSubmit = (evt) => {
 		evt.preventDefault();
-	
+
 		const checkDateIndex = data.findIndex(item => {
 			return item.date === evt.target[0].value
 		})
-
+		
 		if (checkDateIndex === -1 && /^\d{2}([.])\d{2}\1\d{4}$/.test(evt.target[0].value)) {
-			setData([...data.slice(), {
-			date: evt.target[0].value,
-			distance: +evt.target[1].value
-			}])
-			setDate({date: ''});
-			setdistance({distance: ''});
-			return data.slice()
-		} else {
-			setDate({date: ''});
-			setdistance({distance: ''});
+			setData(sortDate([...data.slice(), {
+				date: evt.target[0].value,
+				distance: +evt.target[1].value
+				}])
+			)
+		} else if (search(data, {date: evt.target[0].value}).length) {
+			setData([...data.slice(), data.slice()[checkDateIndex].distance += +evt.target[1].value]);
 			return data.slice()
 		}
+		setDate({date: ''});
+		setDistance({distance: ''});
 	}	
-	
-	sortDate(data);
-	
+		
 	const addNewDate = ({target}) => {
 		const {name, value} = target;
 		setDate(prevForm => ({...prevForm, [name]: value}));
@@ -47,7 +47,7 @@ export default function Training() {
 	
 	const addNewDurate = ({target}) => {
 		const {name, value} = target;
-		setdistance(prevForm => ({...prevForm, [name]: value}));
+		setDistance(prevForm => ({...prevForm, [name]: value}));
 	}
 
 	const removeItem = (item) => {
@@ -58,7 +58,7 @@ export default function Training() {
 	
 	return (
 	<>
-		<form onSubmit={handleSubmit}>
+		<form onSubmit={ handleSubmit }>
 			<div className="form_item">
 				<div className="new_date">
 					<label className="title_items" htmlFor="setData">Дата (ДД.ММ.ГГ)</label>
@@ -71,50 +71,8 @@ export default function Training() {
 			<button className="btn_ok" type="submit">ОК</button>
 			</div>
 		</form>
-		<div className="container">
-			<div className="blocks">
-				<div className="block">
-					<div className="title_items">Дата (ДД.ММ.ГГ)</div>
-				</div>
-				<div className="block">
-					<div className="title_items">Пройдено км</div>
-				</div>
-				   <div className="block">
-					<div className="title_items">Действия</div>
-				</div>
-			</div>
-		</div>
-		<TrainingList items={data} itemRemove={removeItem}/>
+		<FormTitle />
+		<TrainingList items={data} itemRemove={removeItem} />
 	</>
-	)
-}
-
-
-function sortDate(data) {
-	return (data.sort(
-		(dateA, dateB) => Date.parse(dateA.date) - Date.parse(dateB.date)
-	));
-}
-
-
-function TrainingList({ items, itemRemove }) {
-	return (
-		<div className="container">
-			{items.map(item => {
-				return (
-					<div className="blocks" key={item.date}>
-						<div className="block">
-							<div className="title_items">{item.date}</div>
-						</div>
-						<div className="block">
-							<div className="title_items">{item.distance}</div>
-						</div>
-						   <div className="block">
-							<div className="remove_item"><div onClick={() => itemRemove(item)}>✘</div></div>
-						</div>
-					</div>
-				)
-			})}	
-		</div>		
 	)
 }
